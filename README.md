@@ -1,9 +1,13 @@
 ## CSAPP bomb lab 
-This is an x86-64 bomb for self-study students. 
+
+
+phase1  √
+phase2  √
+phase3  √
+phase4  √
 
 
 
-
-Ref:[CMU CSAPP-labs](http://csapp.cs.cmu.edu/3e/labs.html)
-[guoguo-bomb lab][(https://www.bilibili.com/video/BV1vu411o7QP/)
+Ref1:[CMU CSAPP-labs](http://csapp.cs.cmu.edu/3e/labs.html)
+Ref2:[guoguo-bomb lab][(https://www.bilibili.com/video/BV1vu411o7QP/)
 
