@@ -11,7 +11,7 @@ Disassembly of section .init:
   400acd:	c3                   	ret    
 
 Disassembly of section .plt:
-
+;comment
 0000000000400ad0 <.plt>:
   400ad0:	ff 35 1a 25 20 00    	push   0x20251a(%rip)        # 602ff0 <_GLOBAL_OFFSET_TABLE_+0x8>
   400ad6:	ff 25 1c 25 20 00    	jmp    *0x20251c(%rip)        # 602ff8 <_GLOBAL_OFFSET_TABLE_+0x10>
