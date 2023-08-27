@@ -343,67 +343,70 @@ Disassembly of section .text:
   400ede:	90                   	nop
   400edf:	90                   	nop
 
+; 综合下述分析，phase_1() 的答案为 字符串 -- "Border relations with Canada have never been better."
 0000000000400ee0 <phase_1>:
-  400ee0:	48 83 ec 08          	sub    $0x8,%rsp                  # 栈指针 -8 
-  400ee4:	be 00 24 40 00       	mov    $0x402400,%esi             # 把存储在0x402400内存的内容给 %esi
-  400ee9:	e8 4a 04 00 00       	call   401338 <strings_not_equal>
-  400eee:	85 c0                	test   %eax,%eax
-  400ef0:	74 05                	je     400ef7 <phase_1+0x17>
-  400ef2:	e8 43 05 00 00       	call   40143a <explode_bomb>
-  400ef7:	48 83 c4 08          	add    $0x8,%rsp
+  400ee0:	48 83 ec 08          	sub    $0x8,%rsp                    ; 栈指针 -8 
+  400ee4:	be 00 24 40 00       	mov    $0x402400,%esi               ; 把存储在0x402400内存的内容给 %esi,通过gdb 命令 x/s  0x402400 可得该内存地址的内容为 "Border relations with Canada have never been better."
+  400ee9:	e8 4a 04 00 00       	call   401338 <strings_not_equal>   ; call a function named <strings_not_equal> 查看字符串是否相等
+  400eee:	85 c0                	test   %eax,%eax                    ; test %eax %eax 
+  400ef0:	74 05                	je     400ef7 <phase_1+0x17>        ; 如果返回值为0，也即两个字符串相等，跳到0x400ef7
+  400ef2:	e8 43 05 00 00       	call   40143a <explode_bomb>        ; 如果返回值为1，也即两个字符串不相等，触发 <explode_bomb>函数，程序结束
+  400ef7:	48 83 c4 08          	add    $0x8,%rsp                    ; 栈指针 +8 
   400efb:	c3                   	ret    
 
+; 综合下述分析，phase_2() 的答案 为六个数字 -- 1 2 4 8 16 32 
 0000000000400efc <phase_2>:
   400efc:	55                   	push   %rbp
   400efd:	53                   	push   %rbx
   400efe:	48 83 ec 28          	sub    $0x28,%rsp
   400f02:	48 89 e6             	mov    %rsp,%rsi
-  400f05:	e8 52 05 00 00       	call   40145c <read_six_numbers>
-  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp)
-  400f0e:	74 20                	je     400f30 <phase_2+0x34>      # 跳转0x400f30
-  400f10:	e8 25 05 00 00       	call   40143a <explode_bomb>
-  400f15:	eb 19                	jmp    400f30 <phase_2+0x34>
-  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax
-  400f1a:	01 c0                	add    %eax,%eax
-  400f1c:	39 03                	cmp    %eax,(%rbx)
-  400f1e:	74 05                	je     400f25 <phase_2+0x29>
-  400f20:	e8 15 05 00 00       	call   40143a <explode_bomb>
-  400f25:	48 83 c3 04          	add    $0x4,%rbx
-  400f29:	48 39 eb             	cmp    %rbp,%rbx
-  400f2c:	75 e9                	jne    400f17 <phase_2+0x1b>
-  400f2e:	eb 0c                	jmp    400f3c <phase_2+0x40>
-  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx
-  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp
-  400f3a:	eb db                	jmp    400f17 <phase_2+0x1b>
-  400f3c:	48 83 c4 28          	add    $0x28,%rsp
+  400f05:	e8 52 05 00 00       	call   40145c <read_six_numbers>  ; 读取6个数
+  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp)                ; 比较第一个数和 1 的结果
+  400f0e:	74 20                	je     400f30 <phase_2+0x34>      ; 如果第一个数是1， 跳转0x400f30
+  400f10:	e8 25 05 00 00       	call   40143a <explode_bomb>      ; 不是1 则爆炸
+  400f15:	eb 19                	jmp    400f30 <phase_2+0x34>      ; 是1，跳到400f30
+  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax            ; $rbx - 4 地址的数值给%eax ,也就是%eax = 1
+  400f1a:	01 c0                	add    %eax,%eax                  ; $eax + 1 也就是 $eax = 2 
+  400f1c:	39 03                	cmp    %eax,(%rbx)                ; 比较 $eax 和 $rbx 值是否相等，意思就是$rbx 所指向的值得为2
+  400f1e:	74 05                	je     400f25 <phase_2+0x29>      ; 相等则跳到 0x400f25
+  400f20:	e8 15 05 00 00       	call   40143a <explode_bomb>      ; 不等于2 则爆炸
+  400f25:	48 83 c3 04          	add    $0x4,%rbx                  ; $ rbx + 4
+  400f29:	48 39 eb             	cmp    %rbp,%rbx                  ; 比较 $rbp $rbx，也就是while 循环的限制条件
+  400f2c:	75 e9                	jne    400f17 <phase_2+0x1b>      ; 还符合循环条件
+  400f2e:	eb 0c                	jmp    400f3c <phase_2+0x40>      ; 跳出循环
+  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx             ; $rsp 指针 + 4 所指向的值给%rbx
+  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp            
+  400f3a:	eb db                	jmp    400f17 <phase_2+0x1b>      ; 跳到400f17
+  400f3c:	48 83 c4 28          	add    $0x28,%rsp                 ; 栈指针 $rsp + 28 
   400f40:	5b                   	pop    %rbx
   400f41:	5d                   	pop    %rbp
   400f42:	c3                   	ret    
 
+; 综合下述分析，phase_3() 的答案 为2个数字 -- 5 206 
 0000000000400f43 <phase_3>:
   400f43:	48 83 ec 18          	sub    $0x18,%rsp
   400f47:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx
   400f4c:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx
   400f51:	be cf 25 40 00       	mov    $0x4025cf,%esi
   400f56:	b8 00 00 00 00       	mov    $0x0,%eax
-  400f5b:	e8 90 fc ff ff       	call   400bf0 <__isoc99_sscanf@plt>
-  400f60:	83 f8 01             	cmp    $0x1,%eax              
-  400f63:	7f 05                	jg     400f6a <phase_3+0x27>  #比1大，跳到400f6a
-  400f65:	e8 d0 04 00 00       	call   40143a <explode_bomb>
-  400f6a:	83 7c 24 08 07       	cmpl   $0x7,0x8(%rsp)
-  400f6f:	77 3c                	ja     400fad <phase_3+0x6a>  #比07大，跳到 400fad
-  400f71:	8b 44 24 08          	mov    0x8(%rsp),%eax
-  400f75:	ff 24 c5 70 24 40 00 	jmp    *0x402470(,%rax,8)     #跳到400f98
-  400f7c:	b8 cf 00 00 00       	mov    $0xcf,%eax
-  400f81:	eb 3b                	jmp    400fbe <phase_3+0x7b>  # jmp  400fbe
+  400f5b:	e8 90 fc ff ff       	call   400bf0 <__isoc99_sscanf@plt> ; 在这里打断点，然后finish 可得到返回两个数字，也就是输入两个十进制数字
+  400f60:	83 f8 01             	cmp    $0x1,%eax                    ; %eax 与 1 比较
+  400f63:	7f 05                	jg     400f6a <phase_3+0x27>        ; $eax 的值比1大，跳到400f6a
+  400f65:	e8 d0 04 00 00       	call   40143a <explode_bomb>        ; $eax 的值比1小。则爆炸,意思就是说参数个数得大于2
+  400f6a:	83 7c 24 08 07       	cmpl   $0x7,0x8(%rsp)               ; ($rsp+8) 与 7 比较,也就是number1 与7 比较
+  400f6f:	77 3c                	ja     400fad <phase_3+0x6a>        ; 比07大，跳到 400fad，爆炸
+  400f71:	8b 44 24 08          	mov    0x8(%rsp),%eax               ; %eax = number1
+  400f75:	ff 24 c5 70 24 40 00 	jmp    *0x402470(,%rax,8)           ; 跳到 400f98
+  400f7c:	b8 cf 00 00 00       	mov    $0xcf,%eax                     
+  400f81:	eb 3b                	jmp    400fbe <phase_3+0x7b>        
   400f83:	b8 c3 02 00 00       	mov    $0x2c3,%eax
   400f88:	eb 34                	jmp    400fbe <phase_3+0x7b>
   400f8a:	b8 00 01 00 00       	mov    $0x100,%eax
   400f8f:	eb 2d                	jmp    400fbe <phase_3+0x7b>
   400f91:	b8 85 01 00 00       	mov    $0x185,%eax
   400f96:	eb 26                	jmp    400fbe <phase_3+0x7b>
-  400f98:	b8 ce 00 00 00       	mov    $0xce,%eax
-  400f9d:	eb 1f                	jmp    400fbe <phase_3+0x7b>
+  400f98:	b8 ce 00 00 00       	mov    $0xce,%eax                   ; 把0xce 也就是206 给$eax 
+  400f9d:	eb 1f                	jmp    400fbe <phase_3+0x7b>        ; 跳到 0x400fbe
   400f9f:	b8 aa 02 00 00       	mov    $0x2aa,%eax
   400fa4:	eb 18                	jmp    400fbe <phase_3+0x7b>
   400fa6:	b8 47 01 00 00       	mov    $0x147,%eax
@@ -411,23 +414,54 @@ Disassembly of section .text:
   400fad:	e8 88 04 00 00       	call   40143a <explode_bomb>
   400fb2:	b8 00 00 00 00       	mov    $0x0,%eax
   400fb7:	eb 05                	jmp    400fbe <phase_3+0x7b>
-  400fb9:	b8 37 01 00 00       	mov    $0x137,%eax
-  400fbe:	3b 44 24 0c          	cmp    0xc(%rsp),%eax
-  400fc2:	74 05                	je     400fc9 <phase_3+0x86>
+  400fb9:	b8 37 01 00 00       	mov    $0x137,%eax      
+  400fbe:	3b 44 24 0c          	cmp    0xc(%rsp),%eax               ; 比较 ($rsp + 12 )第二个数字和 %eax的大小 ，意思就是第二个数字必须为 206
+  400fc2:	74 05                	je     400fc9 <phase_3+0x86>        ; 第二个数字等于206的话 跳到 0x400fc9
   400fc4:	e8 71 04 00 00       	call   40143a <explode_bomb>
   400fc9:	48 83 c4 18          	add    $0x18,%rsp
   400fcd:	c3                   	ret    
 
+
+; func4 C 语言函数可写成入下的样子， 即 k = x 可跳出递归边界
+; void func4(int x,int y,int z)  //y的初始值为0，z的初始值为14, x -> %edi  t->%rax,k->%ecx
+; {
+;   int t=z-y;
+;   int k=t>>31;
+;   t=(t+k)>>1;
+;   k=t+y;
+;   if(k>x)
+;   {
+;     z=k-1;
+;     func4(x,y,z);
+;     t=2t;
+;     return;
+;   }
+;   else
+;    {
+;      t=0;
+;      if(k<x)
+;      {
+;         y=k+1;
+;         func4(x,y,z);
+;         t=2*t+1;
+;         return;
+;      }
+;      else
+;      {
+;          return;
+;      }
+;    }
+; }
 0000000000400fce <func4>:
-  400fce:	48 83 ec 08          	sub    $0x8,%rsp      # 栈指针 + 8
-  400fd2:	89 d0                	mov    %edx,%eax      # %eax = 0xe = 14
-  400fd4:	29 f0                	sub    %esi,%eax      # %eax = t = 14 - 0 = 14
-  400fd6:	89 c1                	mov    %eax,%ecx      # %ecx = k = 14 
-  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx     # %ecx =  k = k>>31 =0
+  400fce:	48 83 ec 08          	sub    $0x8,%rsp                    ; 栈指针 + 8
+  400fd2:	89 d0                	mov    %edx,%eax                    ; %eax = 0xe = 14
+  400fd4:	29 f0                	sub    %esi,%eax                    ; %eax = t = 14 - 0 = 14
+  400fd6:	89 c1                	mov    %eax,%ecx                    ; %ecx = k = 14 
+  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx                   ; %ecx =  k = k>>31 =0
   400fdb:	01 c8                	add    %ecx,%eax      
-  400fdd:	d1 f8                	sar    %eax           # %eax = t = (t+k)>>1 = 7 
-  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx 
-  400fe2:	39 f9                	cmp    %edi,%ecx
+  400fdd:	d1 f8                	sar    %eax                         ; %eax = t = (t+k)>>1 = 7 
+  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx           ; %ecx = t + y = 7 
+  400fe2:	39 f9                	cmp    %edi,%ecx                    ; %edi = x 和 %ecx =7 比较
   400fe4:	7e 0c                	jle    400ff2 <func4+0x24>
   400fe6:	8d 51 ff             	lea    -0x1(%rcx),%edx
   400fe9:	e8 e0 ff ff ff       	call   400fce <func4>
@@ -442,28 +476,29 @@ Disassembly of section .text:
   401007:	48 83 c4 08          	add    $0x8,%rsp
   40100b:	c3                   	ret    
 
+; 从func4 可知跳出递归边界的值，也就是第一个参数得为 7,第二个参数得为 0，所以答案为 -- 7，0
 000000000040100c <phase_4>:
   40100c:	48 83 ec 18          	sub    $0x18,%rsp
   401010:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx
   401015:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx
   40101a:	be cf 25 40 00       	mov    $0x4025cf,%esi
   40101f:	b8 00 00 00 00       	mov    $0x0,%eax
-  401024:	e8 c7 fb ff ff       	call   400bf0 <__isoc99_sscanf@plt>
-  401029:	83 f8 02             	cmp    $0x2,%eax
-  40102c:	75 07                	jne    401035 <phase_4+0x29>
-  40102e:	83 7c 24 08 0e       	cmpl   $0xe,0x8(%rsp)
-  401033:	76 05                	jbe    40103a <phase_4+0x2e>
-  401035:	e8 00 04 00 00       	call   40143a <explode_bomb>
-  40103a:	ba 0e 00 00 00       	mov    $0xe,%edx        # %edx = 0xe
-  40103f:	be 00 00 00 00       	mov    $0x0,%esi        # %esi = 0 
-  401044:	8b 7c 24 08          	mov    0x8(%rsp),%edi
-  401048:	e8 81 ff ff ff       	call   400fce <func4>
-  40104d:	85 c0                	test   %eax,%eax    # not equal to 0 then jump
-  40104f:	75 07                	jne    401058 <phase_4+0x4c>
-  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)
-  401056:	74 05                	je     40105d <phase_4+0x51>
+  401024:	e8 c7 fb ff ff       	call   400bf0 <__isoc99_sscanf@plt>           ; 读取两个数字
+  401029:	83 f8 02             	cmp    $0x2,%eax                              ; 参数个数和2比较 
+  40102c:	75 07                	jne    401035 <phase_4+0x29>                  ; 参数个数不为2，则跳到 0x401035 爆炸
+  40102e:	83 7c 24 08 0e       	cmpl   $0xe,0x8(%rsp)                         ; 第一个参数和0xe = 14 比较
+  401033:	76 05                	jbe    40103a <phase_4+0x2e>                  ; <= 14 跳到 0x40103a 
+  401035:	e8 00 04 00 00       	call   40143a <explode_bomb>                  ; > 14 爆炸
+  40103a:	ba 0e 00 00 00       	mov    $0xe,%edx                              ; %edx = 0xe
+  40103f:	be 00 00 00 00       	mov    $0x0,%esi                              ; %esi = 0 
+  401044:	8b 7c 24 08          	mov    0x8(%rsp),%edi                         ; %edi = 第一个参数 也就是 x 
+  401048:	e8 81 ff ff ff       	call   400fce <func4>                         ; 调用func4函数
+  40104d:	85 c0                	test   %eax,%eax                              ; %eax not equal to 0 then jump
+  40104f:	75 07                	jne    401058 <phase_4+0x4c>                  ; 如果 %eax 不为0，爆炸
+  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)                         ; 第二个参数和 0 比较
+  401056:	74 05                	je     40105d <phase_4+0x51>                  ; 第二个参数 = 0 则跳到 0x40105d 
   401058:	e8 dd 03 00 00       	call   40143a <explode_bomb>
-  40105d:	48 83 c4 18          	add    $0x18,%rsp
+  40105d:	48 83 c4 18          	add    $0x18,%rsp                             ; 函数退出
   401061:	c3                   	ret    
 
 0000000000401062 <phase_5>:
